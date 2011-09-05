@@ -44,7 +44,10 @@ def get_score():
     
 @app.route('/_twilio/sms', methods=['POST'])
 def twilio_sms():
-    # TODO Verify that it is actually Twilio making the request
+    if app.config['TESTING'] != True:
+        # Verify that it is actually Twilio making the request
+        if request.form['AccountSid'] != app.config['TWILIO_ACCOUNT_SID']:
+            return 'You\'re not twilio!'
     
     if request.form['From'] in g.db.voters:
         return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Sorry, you\'ve already voted for this round.</Sms></Response>'

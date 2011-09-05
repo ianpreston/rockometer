@@ -1,5 +1,6 @@
 DEBUG = False
 TEXT_NUMBER = '(555) 555-5555'
 DATABASE_FILENAME = '/tmp/rockometer.pickle'
+TWILIO_ACCOUNT_SID = ''
 RED_TO = 50
 YELLOW_TO = 65
