@@ -10,6 +10,10 @@ class RockometerDB(object):
     An advanced NoSQL database
     """
     def __init__(self):
+        self.reset()
+        
+        
+    def reset(self):
         # The total score
         self.score = 50
 
@@ -48,6 +52,14 @@ def twilio_sms():
         # Verify that it is actually Twilio making the request
         if request.form['AccountSid'] != app.config['TWILIO_ACCOUNT_SID']:
             return 'You\'re not twilio!'
+            
+    if 'RESET' in request.form['Body'].upper():
+        if request.form['From'] in app.config['ADMIN_PHONE_NUMBERS']:
+            g.db.reset()
+            save_db()
+            return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Great, the meter has been reset.</Sms></Response>'
+        else:
+            return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Sorry, you\'re not an adminstrator.</Sms></Response>'
     
     if request.form['From'] in g.db.voters:
         return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Sorry, you\'ve already voted for this round.</Sms></Response>'

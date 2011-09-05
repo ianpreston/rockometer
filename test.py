@@ -6,6 +6,7 @@ import os
 class RockometerTestCase(unittest.TestCase):
     def setUp(self):
         webapp.app.config['TESTING'] = True
+        webapp.app.config['ADMIN_PHONE_NUMBERS'] = ['+15555551234', '+15555554567']
         webapp.app.config['DATABASE_FILENAME'] = tempfile.mkstemp()[1]
         # Remove the tempfile so that the webapp will re-create it with
         # the default values
@@ -51,6 +52,25 @@ class RockometerTestCase(unittest.TestCase):
                           data={'From': '+15555555553',
                                 'Body': 'Neither'})
         assert 'Please text either' in r.data
+        assert self.app.get('/meter/score').data == '50'
+
+
+    def test_reset(self):
+        r = self.app.post('/_twilio/sms',
+                          data={'From': '+15555555551',
+                                'Body': 'Reset'})
+        assert 'not an admin' in r.data
+        
+        r = self.app.post('/_twilio/sms',
+                          data={'From': '15555551234',
+                                'Body': 'SUCK'})
+        assert 'your vote has been recorded' in r.data
+        assert self.app.get('/meter/score').data == '49'
+        
+        r = self.app.post('/_twilio/sms',
+                          data={'From': '+15555551234',
+                                'Body': 'Reset'})
+        assert 'the meter has been reset' in r.data
         assert self.app.get('/meter/score').data == '50'
 
 
