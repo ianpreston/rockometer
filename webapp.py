@@ -32,7 +32,9 @@ def save_db():
 @app.route('/')
 def index():
     return render_template('index.html',
-                           phone_number=app.config['TEXT_NUMBER'])
+                           phone_number=app.config['TEXT_NUMBER'],
+                           red_to=app.config['RED_TO'],
+                           yellow_to=app.config['YELLOW_TO'])
 
 
 @app.route('/meter/score')
@@ -41,7 +43,7 @@ def get_score():
     
     
 @app.route('/_twilio/sms', methods=['POST'])
-def incscore():
+def twilio_sms():
     # TODO Verify that it is actually Twilio making the request
     
     if request.form['From'] in g.db.voters:
