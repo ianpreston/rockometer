@@ -31,7 +31,8 @@ def save_db():
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html',
+                           phone_number=app.config['TEXT_NUMBER'])
 
 
 @app.route('/meter/score')
