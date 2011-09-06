@@ -23,16 +23,15 @@
     google.load('visualization', '1.0', {'packages':['gauge']});
     google.setOnLoadCallback(draw_chart);
 
-
     function draw_chart() {
-        window.data = new google.visualization.DataTable();
-        window.data.addColumn('string', 'Label');
-        window.data.addColumn('number', 'Value');
-        window.data.addRows(1);
-        window.data.setValue(0, 0, '');
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Label');
+        data.addColumn('number', 'Value');
+        data.addRows(1);
+        data.setValue(0, 0, '');
     
         // Start at 50, the first AJAX reload will set it to it's correct value
-        window.data.setValue(0, 1, 50);
+        data.setValue(0, 1, 50);
 
         // Create and draw the visualization.
         options = { width: 800,
@@ -46,15 +45,15 @@
                     majorTicks: ["0", "", "", "", "", "50", "", "", "", "", "100"]
                     }
               
-        window.chart = new google.visualization.Gauge(document.getElementById('meter'));
-        window.chart.draw(data, options);
+        var chart = new google.visualization.Gauge(document.getElementById('meter'));
+        chart.draw(data, options);
     
         // Query the server for the real score every few seconds
         setInterval(function() {
            $.get('{{ url_for("get_score") }}',
                   function(d) {
-                      window.data.setValue(0, 1, parseInt(d));
-                      window.chart.draw(data, options);
+                      data.setValue(0, 1, parseInt(d));
+                      chart.draw(data, options);
                   })}, 1000);
 
     }
