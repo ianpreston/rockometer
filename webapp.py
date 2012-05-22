@@ -72,7 +72,7 @@ def twilio_sms():
         else:
             return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Sorry, you\'re not an adminstrator.</Sms></Response>'
     
-    if request.form['From'] in g.db.data.voters:
+    if (request.form['From'] in g.db.data.voters) and (app.config['MULTIPLE_VOTES_ALLOWED'] == False):
         return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Sorry, you\'ve already voted for this round.</Sms></Response>'
     else:
         if 'ROCK' in request.form['Body'].upper():

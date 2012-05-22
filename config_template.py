@@ -15,6 +15,9 @@ TWILIO_ACCOUNT_SID = ''
 # e.g. (123) 555-1234 would be +11235551234
 ADMIN_PHONE_NUMBERS = ['+16025551234']
 
+# Are users allowed to vote multiple times?
+MULTIPLE_VOTES_ALLOWED = False
+
 # The color ranges. The meter will display a red area from 0 through
 # RED_TO votes, then a yellow area from there through YELLOW_TO votes,
 # and finally a green area from then on to 100 votes.

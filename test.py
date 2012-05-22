@@ -8,6 +8,7 @@ class RockometerTestCase(unittest.TestCase):
         webapp.app.config['TESTING'] = True
         webapp.app.config['ADMIN_PHONE_NUMBERS'] = ['+15555551234', '+15555554567']
         webapp.app.config['DATABASE_FILENAME'] = tempfile.mkstemp()[1]
+        webapp.app.config['MULTIPLE_VOTES_ALLOWED'] = False
         # Remove the tempfile so that the webapp will re-create it with
         # the default values
         os.remove(webapp.app.config['DATABASE_FILENAME'])
@@ -53,6 +54,28 @@ class RockometerTestCase(unittest.TestCase):
                                 'Body': 'Neither'})
         assert 'Please text either' in r.data
         assert self.app.get('/meter/score').data == '50'
+
+
+    def test_multiple_voting(self):
+        webapp.app.config['MULTIPLE_VOTES_ALLOWED'] = True
+
+        r = self.app.post('/_twilio/sms',
+                          data={'From': '+15555555551',
+                                'Body': 'SUCK'})
+        assert 'your vote has been recorded' in r.data
+        assert self.app.get('/meter/score').data == '49'
+
+        r = self.app.post('/_twilio/sms',
+                          data={'From': '+15555555551',
+                                'Body': 'SUCK'})
+        assert 'your vote has been recorded' in r.data
+        assert self.app.get('/meter/score').data == '48'
+
+        r = self.app.post('/_twilio/sms',
+                          data={'From': '+15555555551',
+                                'Body': 'ROCK'})
+        assert 'your vote has been recorded' in r.data
+        assert self.app.get('/meter/score').data == '49'
 
 
     def test_reset(self):
