@@ -111,7 +111,7 @@ def twilio_sms():
         if request.form['AccountSid'] != app.config['TWILIO_ACCOUNT_SID']:
             return 'You\'re not twilio!'
 
-    command = request.form['Body'].upper()
+    command = request.form['Body'].upper().strip("\n ")
 
     if command in ADMIN_COMMANDS:
         if request.form['From'] not in app.config['ADMIN_PHONE_NUMBERS']:
