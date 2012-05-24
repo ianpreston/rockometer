@@ -97,5 +97,38 @@ class RockometerTestCase(unittest.TestCase):
         assert self.app.get('/meter/score').data == '50'
 
 
+    def test_stop(self):
+        r = self.app.post('/_twilio/sms',
+                          data={'From': '+15555555551',
+                                'Body': 'ROCK'})
+        assert 'your vote has been recorded' in r.data
+        assert self.app.get('/meter/score').data == '51'
+
+        r = self.app.post('/_twilio/sms',
+                          data={'From': '+15555551234',
+                                'Body': 'STOP'})
+        assert 'Voting is now inactive' in r.data
+
+        r = self.app.post('/_twilio/sms',
+                          data={'From': '+15555555552',
+                                'Body': 'ROCK'})
+        assert 'voting has already ended' in r.data
+        assert self.app.get('/meter/score').data == '51'
+
+        r = self.app.post('/_twilio/sms',
+                          data={'From': '+15555554567',
+                                'Body': 'RESET'})
+        assert 'the meter has been reset' in r.data
+        assert self.app.get('/meter/score').data == '50'
+
+
+        r = self.app.post('/_twilio/sms',
+                          data={'From': '+15555555552',
+                                'Body': 'SUCK'})
+        assert 'your vote has been recorded' in r.data
+        assert self.app.get('/meter/score').data == '49'
+
+
+
 if __name__ == '__main__':
     unittest.main()
