@@ -23,4 +23,8 @@ Open `config_template.py`, update the options to your satisfaction, and save it 
 
 Your users can text either `SUCK` or `ROCK` to the meter's phone number to affect the score.
 
-Your administrators can text `RESET` to the meter's phone number to reset the meter to it's original state and restart voting.
+Your administrators can additionally text the following commands:
+
+ * `RESET` - Remove all votes, reset the meter to 50, and begin voting if it was stopped
+
+ * `STOP` - Prevent any more votes from coming in, but keep the meter's score visible
