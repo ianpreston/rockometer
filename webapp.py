@@ -16,6 +16,10 @@ class RockometerDBData(object):
         # The list of phone numbers in E.164 format that have voted
         self.voters = []
 
+        # Are votes still accepted, or has voting ended?
+        self.is_active = True
+
+
 class RockometerDB(object):
     """
     A basic flat-file database implementation. The actual data is stored in
@@ -45,7 +49,17 @@ def cmd_reset():
     return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Great, the meter has been reset.</Sms></Response>'
 
 
+def cmd_stop():
+    g.db.data.is_active = False
+    g.db.save()
+
+    return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Voting is now inactive.</Sms></Response>'
+
+
 def vote(direction):
+    if not g.db.data.is_active:
+        return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Sorry, voting has already ended for this round.</Sms></Response>'
+
     if (request.form['From'] in g.db.data.voters) and (app.config['MULTIPLE_VOTES_ALLOWED'] == False):
         return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Sorry, you\'ve already voted for this round.</Sms></Response>'
 
@@ -58,6 +72,7 @@ def vote(direction):
 
 ADMIN_COMMANDS = {
     'RESET': cmd_reset,
+    'STOP': cmd_stop,
 }
 
 USER_COMMANDS = {
@@ -82,8 +97,13 @@ def index():
 @app.route('/meter/score')
 def get_score():
     return str(g.db.data.score)
-    
-    
+
+
+@app.route('/meter/isactive')
+def get_is_active():
+    return 'y' if g.db.data.is_active else 'n'
+
+
 @app.route('/_twilio/sms', methods=['POST'])
 def twilio_sms():
     if app.config['TESTING'] != True:

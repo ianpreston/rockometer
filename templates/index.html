@@ -56,12 +56,20 @@
                       chart.draw(data, options);
                   })}, 1000);
 
+        // Query the server for whether voting has ended or not every few seconds
+        setInterval(function() {
+            $.get('{{ url_for("get_is_active") }}',
+                function(d) {
+                    if (d == 'y') { $("#instructions").html("Text ROCK or SUCK to {{ phone_number }}"); }
+                    else          { $("#instructions").html("Voting has ended"); }
+            })}, 5000);
+
     }
     </script>
 </head>
 <body>
     <center>
-        <div id="instructions">Text ROCK or SUCK to {{ phone_number }}</div>
+        <div id="instructions">Loading</div>
         <div id="meter"></div>
     </center>
 </body>
