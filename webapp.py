@@ -39,6 +39,33 @@ class RockometerDB(object):
         pickle.dump(self.data, open(self.filename, 'w'))
 
 
+def cmd_reset():
+    g.db.data.reset()
+    g.db.save()
+    return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Great, the meter has been reset.</Sms></Response>'
+
+
+def vote(direction):
+    if (request.form['From'] in g.db.data.voters) and (app.config['MULTIPLE_VOTES_ALLOWED'] == False):
+        return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Sorry, you\'ve already voted for this round.</Sms></Response>'
+
+    g.db.data.voters.append(request.form['From'])
+    g.db.data.score += direction
+    g.db.save()
+
+    return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Great, your vote has been recorded.</Sms></Response>'
+
+
+ADMIN_COMMANDS = {
+    'RESET': cmd_reset,
+}
+
+USER_COMMANDS = {
+    'ROCK': (lambda: vote(1)),
+    'SUCK': (lambda: vote(-1)),
+}
+
+
 @app.before_request
 def before_request():
     g.db = RockometerDB(app.config['DATABASE_FILENAME'])
@@ -63,28 +90,20 @@ def twilio_sms():
         # Verify that it is actually Twilio making the request
         if request.form['AccountSid'] != app.config['TWILIO_ACCOUNT_SID']:
             return 'You\'re not twilio!'
-            
-    if 'RESET' in request.form['Body'].upper():
-        if request.form['From'] in app.config['ADMIN_PHONE_NUMBERS']:
-            g.db.data.reset()
-            g.db.save()
-            return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Great, the meter has been reset.</Sms></Response>'
-        else:
-            return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Sorry, you\'re not an adminstrator.</Sms></Response>'
-    
-    if (request.form['From'] in g.db.data.voters) and (app.config['MULTIPLE_VOTES_ALLOWED'] == False):
-        return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Sorry, you\'ve already voted for this round.</Sms></Response>'
-    else:
-        if 'ROCK' in request.form['Body'].upper():
-            g.db.data.score += 1
-        elif 'SUCK' in request.form['Body'].upper():
-            g.db.data.score -= 1
-        else:
-            return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Please text either SUCK or ROCK.</Sms></Response>'
 
-        g.db.data.voters.append(request.form['From'])
-        g.db.save()
-        return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Great, your vote has been recorded.</Sms></Response>'
+    command = request.form['Body'].upper()
+
+    if command in ADMIN_COMMANDS:
+        if request.form['From'] not in app.config['ADMIN_PHONE_NUMBERS']:
+            return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Sorry, you\'re not an adminstrator.</Sms></Response>'
+
+        return (ADMIN_COMMANDS[command])()
+
+    elif command in USER_COMMANDS:
+        return (USER_COMMANDS[command])()
+
+    else:
+        return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Please text either SUCK or ROCK.</Sms></Response>'
     
     
 if __name__ == '__main__':
