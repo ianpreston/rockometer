@@ -49,20 +49,28 @@
         chart.draw(data, options);
     
         // Query the server for the real score every few seconds
-        setInterval(function() {
+        var updateMeter = function() {
            $.get('{{ url_for("get_score") }}',
                   function(d) {
                       data.setValue(0, 1, parseInt(d));
                       chart.draw(data, options);
-                  })}, 1000);
+                  });
+        };
+
+        updateMeter();
+        setInterval(updateMeter, 1000);
 
         // Query the server for whether voting has ended or not every few seconds
-        setInterval(function() {
+        var updateVotingInstructions = function() {
             $.get('{{ url_for("get_is_active") }}',
                 function(d) {
                     if (d == 'y') { $("#instructions").html("Text ROCK or SUCK to {{ phone_number }}"); }
                     else          { $("#instructions").html("Voting has ended"); }
-            })}, 5000);
+            });
+        };
+
+        updateVotingInstructions();
+        setInterval(updateVotingInstructions, 5000);
 
     }
     </script>
