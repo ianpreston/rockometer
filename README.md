@@ -28,3 +28,5 @@ Your administrators can additionally text the following commands:
  * `RESET` - Remove all votes, reset the meter to 50, and begin voting if it was stopped
 
  * `STOP` - Prevent any more votes from coming in, but keep the meter's score visible
+
+ * `START` - Start a previously-stopped meter without resetting the score

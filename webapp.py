@@ -52,8 +52,13 @@ def cmd_reset():
 def cmd_stop():
     g.db.data.is_active = False
     g.db.save()
-
     return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Voting is now inactive.</Sms></Response>'
+
+
+def cmd_start():
+    g.db.data.is_active = True
+    g.db.save()
+    return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Voting is now active.</Sms></Response>'
 
 
 def vote(direction):
@@ -73,6 +78,7 @@ def vote(direction):
 ADMIN_COMMANDS = {
     'RESET': cmd_reset,
     'STOP': cmd_stop,
+    'START': cmd_start,
 }
 
 USER_COMMANDS = {
