@@ -24,29 +24,44 @@ class Settings(object):
     id = Int(primary=True)
     active = Bool()
 
+##
+# Helper functions
+##
+
+def set_settings(**kwargs):
+    g.store.find(Settings).set(**kwargs)
+
+
+def get_settings():
+    return g.store.find(Settings).one()
+
+
+##
+# SMS Commands
+##
 
 def cmd_reset():
     g.store.find(Vote).set(active=False)
-    g.store.find(Settings).set(active=True)
+    set_settings(active=True)
     g.store.commit()
 
     return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Great, the meter has been reset.</Sms></Response>'
 
 
 def cmd_stop():
-    g.store.find(Settings).set(active=False)
+    set_settings(active=False)
     g.store.commit()
     return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Voting is now inactive.</Sms></Response>'
 
 
 def cmd_start():
-    g.store.find(Settings).set(active=True)
+    set_settings(active=True)
     g.store.commit()
     return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Voting is now active.</Sms></Response>'
 
 
 def vote(direction):
-    if g.store.find(Settings).one().active == False:
+    if get_settings().active == False:
         return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Sorry, voting has already ended for this round.</Sms></Response>'
 
     if app.config['MAX_VOTES'] != -1 and \
@@ -72,6 +87,9 @@ USER_COMMANDS = {
     'SUCK': (lambda: vote(-1)),
 }
 
+##
+# Request handlers
+##
 
 @app.before_request
 def before_request():
@@ -108,7 +126,7 @@ def get_score():
 
 @app.route('/meter/isactive')
 def get_is_active():
-    return 'y' if g.store.find(Settings).one().active else 'n'
+    return 'y' if get_settings().active else 'n'
 
 
 @app.route('/_twilio/sms', methods=['POST'])
