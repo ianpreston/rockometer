@@ -73,7 +73,10 @@ def vote(direction):
     g.store.flush()
     g.store.commit()
 
-    return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Great, your vote has been recorded.</Sms></Response>'
+    if g.store.find(Vote, fromNumber=request.form['From'], active=True).count() == 1:
+        return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Great, your vote has been recorded.</Sms></Response>'
+    else:
+        return ''
 
 
 ADMIN_COMMANDS = {
