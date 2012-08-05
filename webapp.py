@@ -65,7 +65,7 @@ def vote(direction):
         return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Sorry, voting has already ended for this round.</Sms></Response>'
 
     if app.config['MAX_VOTES'] != -1 and \
-       g.store.find(Vote, fromNumber=request.form['From'], active=True).count() >= 1:
+       g.store.find(Vote, fromNumber=request.form['From'], active=True).count() >= app.config['MAX_VOTES']:
         return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Sorry, you\'ve already voted for this round.</Sms></Response>'
 
     vote = Vote(direction, request.form['From'])
