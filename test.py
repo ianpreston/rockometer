@@ -8,7 +8,7 @@ class RockometerTestCase(unittest.TestCase):
         webapp.app.config['TESTING'] = True
         webapp.app.config['ADMIN_PHONE_NUMBERS'] = ['+15555551234', '+15555554567']
         webapp.app.config['DATABASE_FILENAME'] = tempfile.mkstemp()[1]
-        webapp.app.config['MULTIPLE_VOTES_ALLOWED'] = False
+        webapp.app.config['MAX_VOTES'] = 1
 
         # Remove the temp database so that the webapp will re-create it with
         # the default values
@@ -58,7 +58,7 @@ class RockometerTestCase(unittest.TestCase):
 
 
     def test_multiple_voting(self):
-        webapp.app.config['MULTIPLE_VOTES_ALLOWED'] = True
+        webapp.app.config['MAX_VOTES'] = -1
 
         r = self.app.post('/_twilio/sms',
                           data={'From': '+15555555551',

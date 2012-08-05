@@ -49,7 +49,7 @@ def vote(direction):
     if g.store.find(Settings).one().active == False:
         return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Sorry, voting has already ended for this round.</Sms></Response>'
 
-    if app.config['MULTIPLE_VOTES_ALLOWED'] == False and \
+    if app.config['MAX_VOTES'] != -1 and \
        g.store.find(Vote, fromNumber=request.form['From'], active=True).count() >= 1:
         return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Sorry, you\'ve already voted for this round.</Sms></Response>'
 
