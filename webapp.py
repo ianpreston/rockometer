@@ -1,76 +1,62 @@
 from flask import Flask, request, render_template, g
-import pickle
+from storm.locals import create_database, Store, Int, Unicode, Bool
+import os
 import os.path
 
 app = Flask(__name__)
 app.config.from_object('config')
 
-class RockometerDBData(object):
-    def __init__(self):
-        self.reset()
+class Vote(object):
+    __storm_table__ = 'votes'
+    id = Int(primary=True)
+    direction = Int()
+    fromNumber = Unicode()
+    active = Bool()
 
-    def reset(self):
-        # The total score
-        self.score = 50
-
-        # The list of phone numbers in E.164 format that have voted
-        self.voters = []
-
-        # Are votes still accepted, or has voting ended?
-        self.is_active = True
+    def __init__(self, direction, fromNumber):
+        self.direction = direction
+        self.fromNumber = fromNumber
+        self.active = True
 
 
-class RockometerDB(object):
-    """
-    A basic flat-file database implementation. The actual data is stored in
-    RockometerDB.data, which is an instance of RockometerDBData
-    """
-    def __init__(self, filename):
-        """
-        If a database file at `filename' exists, open and use that database
-        file. Otherwise, create a new, blank database.
-        """
-        self.filename = filename
-        if os.path.exists(filename):
-            self.data = pickle.load(open(self.filename, 'r'))
-        else:
-            self.data = RockometerDBData()
-
-    def save(self):
-        """
-        Save the current state of the database to disk.
-        """
-        pickle.dump(self.data, open(self.filename, 'w'))
+class Settings(object):
+    __storm_table__ = 'settings'
+    id = Int(primary=True)
+    active = Bool()
 
 
 def cmd_reset():
-    g.db.data.reset()
-    g.db.save()
+    g.store.find(Vote).set(active=False)
+    g.store.find(Settings).set(active=True)
+    g.store.commit()
+
     return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Great, the meter has been reset.</Sms></Response>'
 
 
 def cmd_stop():
-    g.db.data.is_active = False
-    g.db.save()
+    g.store.find(Settings).set(active=False)
+    g.store.commit()
     return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Voting is now inactive.</Sms></Response>'
 
 
 def cmd_start():
-    g.db.data.is_active = True
-    g.db.save()
+    g.store.find(Settings).set(active=True)
+    g.store.commit()
     return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Voting is now active.</Sms></Response>'
 
 
 def vote(direction):
-    if not g.db.data.is_active:
+    if g.store.find(Settings).one().active == False:
         return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Sorry, voting has already ended for this round.</Sms></Response>'
 
-    if (request.form['From'] in g.db.data.voters) and (app.config['MULTIPLE_VOTES_ALLOWED'] == False):
+    if app.config['MULTIPLE_VOTES_ALLOWED'] == False and \
+       g.store.find(Vote, fromNumber=request.form['From'], active=True).count() >= 1:
         return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Sorry, you\'ve already voted for this round.</Sms></Response>'
 
-    g.db.data.voters.append(request.form['From'])
-    g.db.data.score += direction
-    g.db.save()
+    vote = Vote(direction, request.form['From'])
+    g.store.add(vote)
+    g.store.flush()
+    g.store.commit()
 
     return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Great, your vote has been recorded.</Sms></Response>'
 
@@ -89,7 +75,19 @@ USER_COMMANDS = {
 
 @app.before_request
 def before_request():
-    g.db = RockometerDB(app.config['DATABASE_FILENAME'])
+    # If the database file does not exist, execute dbinit.sql to
+    # initialize it. Assumes that CWD is the same directory as this
+    # script
+    if os.path.exists(app.config['DATABASE_FILENAME']) == False:
+        os.system('sqlite3 ' + app.config['DATABASE_FILENAME'] + ' < ' + 'dbinit.sql')
+
+    g.db = create_database('sqlite:///' + app.config['DATABASE_FILENAME'])
+    g.store = Store(g.db)
+
+
+@app.teardown_request
+def teardown_request(exception):
+    g.store.close()
 
 
 @app.route('/')
@@ -102,18 +100,20 @@ def index():
 
 @app.route('/meter/score')
 def get_score():
-    return str(g.db.data.score)
+    default_score = 50
+    score = default_score + (g.store.find(Vote, Vote.active == True).sum(Vote.direction) or 0)
+
+    return str(score)
 
 
 @app.route('/meter/isactive')
 def get_is_active():
-    return 'y' if g.db.data.is_active else 'n'
+    return 'y' if g.store.find(Settings).one().active else 'n'
 
 
 @app.route('/_twilio/sms', methods=['POST'])
 def twilio_sms():
     if app.config['TESTING'] != True:
-        # Verify that it is actually Twilio making the request
         if request.form['AccountSid'] != app.config['TWILIO_ACCOUNT_SID']:
             return 'You\'re not twilio!'
 

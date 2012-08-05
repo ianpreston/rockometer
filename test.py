@@ -9,9 +9,11 @@ class RockometerTestCase(unittest.TestCase):
         webapp.app.config['ADMIN_PHONE_NUMBERS'] = ['+15555551234', '+15555554567']
         webapp.app.config['DATABASE_FILENAME'] = tempfile.mkstemp()[1]
         webapp.app.config['MULTIPLE_VOTES_ALLOWED'] = False
-        # Remove the tempfile so that the webapp will re-create it with
+
+        # Remove the temp database so that the webapp will re-create it with
         # the default values
         os.remove(webapp.app.config['DATABASE_FILENAME'])
+
         self.app = webapp.app.test_client()
         
         
@@ -19,7 +21,6 @@ class RockometerTestCase(unittest.TestCase):
         try:
             os.remove(webapp.app.config['DATABASE_FILENAME'])
         except OSError:
-            # No big deal. The test just didn't save the file.
             pass
         
 
@@ -127,7 +128,6 @@ class RockometerTestCase(unittest.TestCase):
                                 'Body': 'SUCK'})
         assert 'your vote has been recorded' in r.data
         assert self.app.get('/meter/score').data == '49'
-
 
 
 if __name__ == '__main__':

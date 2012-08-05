@@ -5,8 +5,8 @@ DEBUG = False
 # registered your app with on Twilio. Any format is acceptable.
 TEXT_NUMBER = '(555) 555-5555'
 
-# Where the "database" file is stored. The default is probably fine.
-DATABASE_FILENAME = '/tmp/rockometer.pickle'
+# Where the database file is stored. The default is probably fine.
+DATABASE_FILENAME = 'db.sqlite3'
 
 # Your Twilio account SID.
 TWILIO_ACCOUNT_SID = ''
