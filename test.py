@@ -69,13 +69,11 @@ class RockometerTestCase(unittest.TestCase):
         r = self.app.post('/_twilio/sms',
                           data={'From': '+15555555551',
                                 'Body': 'SUCK'})
-        assert 'your vote has been recorded' in r.data
         assert self.app.get('/meter/score').data == '48'
 
         r = self.app.post('/_twilio/sms',
                           data={'From': '+15555555551',
                                 'Body': 'ROCK'})
-        assert 'your vote has been recorded' in r.data
         assert self.app.get('/meter/score').data == '49'
 
 
