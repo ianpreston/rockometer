@@ -97,14 +97,15 @@ USER_COMMANDS = {
 @app.before_request
 def before_request():
     # If the database file does not exist, execute dbinit.sql to
-    # initialize it. Assumes that CWD is the same directory as this
-    # script
-    if os.path.exists(app.config['DATABASE_FILENAME']) == False:
-        os.system('sqlite3 ' + app.config['DATABASE_FILENAME'] + ' < ' + 'dbinit.sql')
+    # initialize it
+    script_dir = os.path.dirname(__file__)
+    database_abs = os.path.join(script_dir, app.config['DATABASE_FILENAME'])
+    dbinit_abs = os.path.join(script_dir, 'dbinit.sql')
+    if os.path.exists(database_abs) == False:
+        os.system('sqlite3 ' + database_abs + ' < ' + dbinit_abs)
 
-    g.db = create_database('sqlite:///' + app.config['DATABASE_FILENAME'])
+    g.db = create_database('sqlite:///' + database_abs)
     g.store = Store(g.db)
-
 
 @app.teardown_request
 def teardown_request(exception):
