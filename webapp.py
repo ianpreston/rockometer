@@ -35,6 +35,9 @@ def set_settings(**kwargs):
 def get_settings():
     return g.store.find(Settings).one()
 
+def sms(message):
+    return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>{0}</Sms></Response>'.format(message)
+
 
 ##
 # SMS Commands
@@ -45,28 +48,28 @@ def cmd_reset():
     set_settings(active=True)
     g.store.commit()
 
-    return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Great, the meter has been reset.</Sms></Response>'
+    return sms('Great, the meter has been reset.')
 
 
 def cmd_stop():
     set_settings(active=False)
     g.store.commit()
-    return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Voting is now inactive.</Sms></Response>'
+    return sms('Voting is now inactive.')
 
 
 def cmd_start():
     set_settings(active=True)
     g.store.commit()
-    return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Voting is now active.</Sms></Response>'
+    return sms('Voting is now active.')
 
 
 def vote(direction):
     if get_settings().active == False:
-        return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Sorry, voting has already ended for this round.</Sms></Response>'
+        return sms('Sorry, voting has already ended for this round.')
 
     if app.config['MAX_VOTES'] != -1 and \
        g.store.find(Vote, fromNumber=request.form['From'], active=True).count() >= app.config['MAX_VOTES']:
-        return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Sorry, you\'ve already voted for this round.</Sms></Response>'
+        return sms('Sorry, you\'ve already voted for this round.')
 
     vote = Vote(direction, request.form['From'])
     g.store.add(vote)
@@ -74,7 +77,7 @@ def vote(direction):
     g.store.commit()
 
     if g.store.find(Vote, fromNumber=request.form['From'], active=True).count() == 1:
-        return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Great, your vote has been recorded.</Sms></Response>'
+        return sms('Great, your vote has been recorded.')
     else:
         return ''
 
@@ -143,7 +146,7 @@ def twilio_sms():
 
     if command in ADMIN_COMMANDS:
         if request.form['From'] not in app.config['ADMIN_PHONE_NUMBERS']:
-            return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Sorry, you\'re not an adminstrator.</Sms></Response>'
+            return sms('Sorry, you\'re not an adminstrator.')
 
         return (ADMIN_COMMANDS[command])()
 
@@ -151,7 +154,7 @@ def twilio_sms():
         return (USER_COMMANDS[command])()
 
     else:
-        return '<?xml version="1.0" encoding="UTF-8"?><Response><Sms>Please text either SUCK or ROCK.</Sms></Response>'
+        return sms('Please text either SUCK or ROCK.')
     
     
 if __name__ == '__main__':
