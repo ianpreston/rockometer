@@ -1,10 +1,13 @@
 from flask import Flask, request, render_template, g
+from flask.ext.basicauth import BasicAuth
 from storm.locals import create_database, Store, Desc, Int, Unicode, Bool
 import os
 import os.path
 
 app = Flask(__name__)
 app.config.from_object('config')
+
+basic_auth = BasicAuth(app)
 
 class Vote(object):
     __storm_table__ = 'votes'
@@ -136,6 +139,7 @@ def get_is_active():
 
 
 @app.route('/admin/')
+@basic_auth.required
 def admin_index():
     return render_template('admin/index.html',
                            votes=g.store.find(Vote).order_by(Desc(Vote.id)))

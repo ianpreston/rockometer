@@ -15,6 +15,10 @@ TWILIO_ACCOUNT_SID = ''
 # e.g. (123) 555-1234 would be +11235551234
 ADMIN_PHONE_NUMBERS = ['+16025551234']
 
+# Authentication username/password for the admin section of the site
+BASIC_AUTH_USERNAME = 'admin'
+BASIC_AUTH_PASSWORD = 'admin'
+
 # The maximum number of times a user is allowed to vote. If this is
 # set to -1, users will be able to vote an unlimited number of times.
 MAX_VOTES = 1
