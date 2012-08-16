@@ -5,14 +5,6 @@ It is a clone of Gangplank's Sentiment Meter used during Extreme Pitch.
 
 ## Installation
 
- * Obtain the latest version of the code from Github
-
- * Unzip the files and configure your installation (see Configuration below)
-
- * Set up Twilio by choosing a phone number and setting the SMS URL for that number to `your-rockometer-installation/_twilio/sms`
-
- * Set up a web server to host the Rock-O-Meter
-
 
 ## Configuration
 
