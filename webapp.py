@@ -1,5 +1,5 @@
 from flask import Flask, request, render_template, g
-from storm.locals import create_database, Store, Int, Unicode, Bool
+from storm.locals import create_database, Store, Desc, Int, Unicode, Bool
 import os
 import os.path
 
@@ -30,7 +30,6 @@ class Settings(object):
 
 def set_settings(**kwargs):
     g.store.find(Settings).set(**kwargs)
-
 
 def get_settings():
     return g.store.find(Settings).one()
@@ -136,6 +135,11 @@ def get_is_active():
     return 'y' if get_settings().active else 'n'
 
 
+@app.route('/admin/')
+def admin_index():
+    return render_template('admin/index.html',
+                           votes=g.store.find(Vote).order_by(Desc(Vote.id)))
+
 @app.route('/_twilio/sms', methods=['POST'])
 def twilio_sms():
     if app.config['TESTING'] != True:
@@ -155,7 +159,16 @@ def twilio_sms():
 
     else:
         return sms('Please text either SUCK or ROCK.')
-    
+
+
+##
+# Template filters
+##
+
+@app.template_filter('prettifydid')
+def prettify_did(did):
+    # Strip country code (assuming 1-digit country code) and add dashes
+    return did[2:5] + '-' + did[5:8] + '-' + did[8:]
     
 if __name__ == '__main__':
     app.run()
