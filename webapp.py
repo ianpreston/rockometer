@@ -1,8 +1,9 @@
 from flask import Flask, request, render_template, g
 from flask.ext.basicauth import BasicAuth
-from storm.locals import create_database, Store, Desc, Int, Unicode, Bool
+from storm.locals import create_database, Store, Desc, Int, Unicode, Bool, DateTime
 import os
 import os.path
+import datetime
 
 app = Flask(__name__)
 app.config.from_object('config')
@@ -15,11 +16,13 @@ class Vote(object):
     direction = Int()
     fromNumber = Unicode()
     active = Bool()
+    created_at = DateTime()
 
     def __init__(self, direction, fromNumber):
         self.direction = direction
         self.fromNumber = fromNumber
         self.active = True
+        self.created_at = datetime.datetime.now()
 
 
 class Settings(object):
