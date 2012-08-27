@@ -60,19 +60,13 @@ $(function() {
             </thead>
             <tbody>
                 {% for vote in votes %}
-                    <tr>
-                        {% if vote.active %}
-                            <td>{{ vote.fromNumber|prettifydid }}</td>
-                        {% else %}
-                            <td><span style="color: gray;">{{ vote.fromNumber|prettifydid }}</span></td>
-                        {% endif %}
-
-                        {% if vote.active %}
-                            <td>{{ vote.created_at.strftime('%Y-%m-%d %I:%M%p') }}</td>
-                        {% else %}
-                            <td><span style="color: gray;">{{ vote.created_at.strftime('%Y-%m-%d %I:%M%p') }}</span></td>
-                        {% endif %}
-
+                    {% if vote.active %}
+                        <tr class="vote-active">
+                    {% else %}
+                        <tr class="vote-inactive">
+                    {% endif %}
+                        <td>{{ vote.fromNumber|prettifydid }}</td>
+                        <td>{{ vote.created_at.strftime('%Y-%m-%d %I:%M%p') }}</td>
                         <td><i class="icon-thumbs-{% if vote.direction == 1 %}up{% else %}down{% endif %}"></i></td>
                     </tr>
                 {% endfor %}
