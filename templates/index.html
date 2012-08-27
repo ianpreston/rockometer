@@ -2,58 +2,48 @@
 <html lang="en">
 <head>
     <title>Rock-O-Meter</title>
+    <link href='http://fonts.googleapis.com/css?family=Anonymous+Pro:400,700' rel='stylesheet' type='text/css'>
     <style type="text/css">
     body
     {
-        font-family: Helvetica,Arial;
+        background: url(/static/img/background.png);
     }
     #instructions
     {
-        font-size: 45pt;
+        font-family: 'Anonymous Pro', sans-serif;
+        font-size: 60pt;
+        color: #9F9F9F;
+        text-shadow: 0px 1px 0px #666;
+        
     }
-    #meter
+    #meter-score
     {
-        width: 800px;
-        height: 800px;
+        font-family: 'Anonymous Pro', sans-serif;
+        font-size: 140pt;
+        font-weight: bold;
+        color: white;
+        text-align: center;
+        margin-top: 200px;
+    }
+    #meter-container
+    {
+        text-align: center;
     }
     </style>
-    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.6.2.min.js"></script>
+    <script type="text/javascript" src="/static/js/gauge.min.js"></script>
     <script type="text/javascript">
-    google.load('visualization', '1.0', {'packages':['gauge']});
-    google.setOnLoadCallback(draw_chart);
 
-    function draw_chart() {
-        var data = new google.visualization.DataTable();
-        data.addColumn('string', 'Label');
-        data.addColumn('number', 'Value');
-        data.addRows(1);
-        data.setValue(0, 0, '');
-    
-        // Start at 50, the first AJAX reload will set it to it's correct value
-        data.setValue(0, 1, 50);
+    $(function() {
+        var meterCanvas = document.getElementById('meter');
+        var g = new Gauge(meterCanvas);
 
-        // Create and draw the visualization.
-        options = { width: 800,
-                    height: 800,
-                    redFrom: 0, 
-                    redTo: {{ red_to }},
-                    yellowFrom: {{ red_to }},
-                    yellowTo: {{ yellow_to }},
-                    greenFrom: {{ yellow_to }},
-                    greenTo: 100,
-                    majorTicks: ["0", "", "", "", "", "50", "", "", "", "", "100"]
-                    }
-              
-        var chart = new google.visualization.Gauge(document.getElementById('meter'));
-        chart.draw(data, options);
-    
         // Query the server for the real score every few seconds
         var updateMeter = function() {
            $.get('{{ url_for("get_score") }}',
                   function(d) {
-                      data.setValue(0, 1, parseInt(d));
-                      chart.draw(data, options);
+                        drawMeter(parseInt(d));
+                        $('#meter-score').html(d);
                   });
         };
 
@@ -71,14 +61,41 @@
 
         updateVotingInstructions();
         setInterval(updateVotingInstructions, 5000);
+        
+        var drawMeter = function(val) {
+            var opts = {
+                lines: 12,
+                angle: 0,
+                lineWidth: 0.44,
+                fontSize: 24,
+                currval: val,
+                pointer: {
+                    length: 0.9,
+                    strokeWidth: 0.035,
+                    color: '#000000'
+                },
+                colorStart: '#6FADCF',
+                colorStop: '#8FC0DA',
+                strokeColor: '#E0E0E0',
+                generateGradient: true
+            };
 
-    }
+            g.setOptions(opts);
+
+            g.maxValue = 100;
+            g.animationSpeed = 32;
+            g.set(val);
+        }
+    });
     </script>
 </head>
 <body>
     <center>
         <div id="instructions">Loading</div>
-        <div id="meter"></div>
+        <div id="meter-score"></div>
+        <div id="meter-container">
+            <canvas id="meter" width="900" height="600"></canvas>
+        </div>
     </center>
 </body>
 </html>
