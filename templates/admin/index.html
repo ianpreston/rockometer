@@ -29,6 +29,18 @@ $(function() {
     };
     updateVotingInstructions();
     setInterval(updateVotingInstructions, 5000);
+
+    $('#hide-inactive-votes').click(function() {
+        $('.vote-inactive').hide();
+        $('#show-inactive-votes').show();
+        $('#hide-inactive-votes').hide();
+    });
+
+    $('#show-inactive-votes').click(function() {
+        $('.vote-inactive').show();
+        $('#hide-inactive-votes').show();
+        $('#show-inactive-votes').hide();
+    });
 });
 </script>
 {% endblock %}
@@ -51,6 +63,9 @@ $(function() {
     </div>
     <div class="span9">
         <h1>Votes</h1>
+
+        <a href="#" id="hide-inactive-votes">Hide inactive votes</a>
+        <a href="#" id="show-inactive-votes" style="display:none;">Show inactive votes</a>
 
         <table class="table table-bordered table-striped">
             <thead>
