@@ -1,31 +1,82 @@
 {% extends "admin/layout.html" %}
+{% block head %}
+<script type="text/javascript">
+$(function() {
+    // Query the server for the real score every few seconds
+    var updateMeter = function() {
+       $.get('{{ url_for("get_score") }}',
+              function(d) {
+                    $('#meter-score').html(d);
+              });
+    };
+    updateMeter();
+    setInterval(updateMeter, 1000);
+
+    // Query the server for whether voting has ended or not every few seconds
+    var updateVotingInstructions = function() {
+        $.get('{{ url_for("get_is_active") }}',
+            function(d) {
+                if (d == 'y') {
+                    $('#meter-status').html('Active');
+                    $('#meter-status').addClass('label-success');
+                    $('#meter-status').removeClass('label-warning');
+                } else {
+                    $('#meter-status').html('Inactive');
+                    $('#meter-status').removeClass('label-success');
+                    $('#meter-status').addClass('label-warning');
+                }
+        });
+    };
+    updateVotingInstructions();
+    setInterval(updateVotingInstructions, 5000);
+});
+</script>
+{% endblock %}
 {% block body %}
-<h1>Votes</h1>
+<div class="row">
+    <div class="span3">
+        <h1>Status</h1>
+        <table class="table">
+            <tbody>
+                <tr>
+                    <td>Current Score</td>
+                    <td><span id="meter-score" class="label label-inverse"></span></td>
+                </tr>
+                <tr>
+                    <td>Voting is</td>
+                    <td><span id="meter-status" class="label"></span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="span9">
+        <h1>Votes</h1>
 
-<table class="table table-bordered table-striped">
-    <thead>
-        <th>From</th>
-        <th>Time</th>
-        <th>Vote</th>
-    </thead>
-    <tbody>
-        {% for vote in votes %}
-            <tr>
-                {% if vote.active %}
-                    <td>{{ vote.fromNumber|prettifydid }}</td>
-                {% else %}
-                    <td><span style="color: gray;">{{ vote.fromNumber|prettifydid }}</span></td>
-                {% endif %}
+        <table class="table table-bordered table-striped">
+            <thead>
+                <th>From</th>
+                <th>Time</th>
+                <th>Vote</th>
+            </thead>
+            <tbody>
+                {% for vote in votes %}
+                    <tr>
+                        {% if vote.active %}
+                            <td>{{ vote.fromNumber|prettifydid }}</td>
+                        {% else %}
+                            <td><span style="color: gray;">{{ vote.fromNumber|prettifydid }}</span></td>
+                        {% endif %}
 
-                {% if vote.active %}
-                    <td>{{ vote.created_at.strftime('%Y-%m-%d %I:%M%p') }}</td>
-                {% else %}
-                    <td><span style="color: gray;">{{ vote.created_at.strftime('%Y-%m-%d %I:%M%p') }}</span></td>
-                {% endif %}
+                        {% if vote.active %}
+                            <td>{{ vote.created_at.strftime('%Y-%m-%d %I:%M%p') }}</td>
+                        {% else %}
+                            <td><span style="color: gray;">{{ vote.created_at.strftime('%Y-%m-%d %I:%M%p') }}</span></td>
+                        {% endif %}
 
-                <td><i class="icon-thumbs-{% if vote.direction == 1 %}up{% else %}down{% endif %}"></i></td>
-            </tr>
-        {% endfor %}
-    </tbody>
-</table>
+                        <td><i class="icon-thumbs-{% if vote.direction == 1 %}up{% else %}down{% endif %}"></i></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 {% endblock %}
