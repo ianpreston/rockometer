@@ -147,6 +147,28 @@ def admin_index():
     return render_template('admin/index.html',
                            votes=g.store.find(Vote).order_by(Desc(Vote.id)))
 
+@app.route('/admin/_actions/stop')
+@basic_auth.required
+def admin_actions_stop():
+    set_settings(active=False)
+    g.store.commit()
+    return 'success'
+
+@app.route('/admin/_actions/start')
+@basic_auth.required
+def admin_actions_start():
+    set_settings(active=True)
+    g.store.commit()
+    return 'success'
+
+@app.route('/admin/_actions/reset')
+@basic_auth.required
+def admin_actions_reset():
+    g.store.find(Vote).set(active=False)
+    set_settings(active=True)
+    g.store.commit()
+    return 'success'
+
 @app.route('/_twilio/sms', methods=['POST'])
 def twilio_sms():
     if app.config['TESTING'] != True:

@@ -17,18 +17,32 @@ $(function() {
         $.get('{{ url_for("get_is_active") }}',
             function(d) {
                 if (d == 'y') {
-                    $('#meter-status').html('Active');
-                    $('#meter-status').addClass('label-success');
-                    $('#meter-status').removeClass('label-warning');
+                    $(window).trigger('meter:enabled');
                 } else {
-                    $('#meter-status').html('Inactive');
-                    $('#meter-status').removeClass('label-success');
-                    $('#meter-status').addClass('label-warning');
+                    $(window).trigger('meter:disabled');
                 }
         });
     };
     updateVotingInstructions();
     setInterval(updateVotingInstructions, 5000);
+
+    $(window).bind('meter:enabled', function() {
+        $('#meter-status').html('Active');
+        $('#meter-status').addClass('label-success');
+        $('#meter-status').removeClass('label-warning');
+
+        $('#start-voting').hide();
+        $('#stop-voting').show();
+    });
+
+    $(window).bind('meter:disabled', function() {
+        $('#meter-status').html('Inactive');
+        $('#meter-status').removeClass('label-success');
+        $('#meter-status').addClass('label-warning');
+
+        $('#start-voting').show();
+        $('#stop-voting').hide();
+    });
 
     $('#hide-inactive-votes').click(function() {
         $('.vote-inactive').hide();
@@ -40,6 +54,23 @@ $(function() {
         $('.vote-inactive').show();
         $('#hide-inactive-votes').show();
         $('#show-inactive-votes').hide();
+    });
+
+    $('#start-voting').click(function() {
+        $.get('/admin/_actions/start');
+        $(window).trigger('meter:enabled');
+    });
+
+    $('#stop-voting').click(function() {
+        $.get('/admin/_actions/stop');
+        $(window).trigger('meter:disabled');
+    });
+
+    $('#reset-meter').click(function() {
+        $.get('/admin/_actions/reset');
+        
+        $('.vote-active').addClass('vote-inactive');
+        $('.vote-active').removeClass('vote-active');
     });
 });
 </script>
@@ -60,6 +91,13 @@ $(function() {
                 </tr>
             </tbody>
         </table>
+
+        <h2>Actions</h2>
+        <div class="btn-group">
+            <button id="start-voting" class="btn">Start Voting</button>
+            <button id="stop-voting" class="btn" style="display:none;">Stop Voting</button>
+            <button id="reset-meter" class="btn">Reset Meter</button>
+        </div>
     </div>
     <div class="span9">
         <h1>Votes</h1>
