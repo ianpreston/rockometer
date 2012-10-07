@@ -22,9 +22,3 @@ BASIC_AUTH_PASSWORD = 'admin'
 # The maximum number of times a user is allowed to vote. If this is
 # set to -1, users will be able to vote an unlimited number of times.
 MAX_VOTES = 1
-
-# The color ranges. The meter will display a red area from 0 through
-# RED_TO votes, then a yellow area from there through YELLOW_TO votes,
-# and finally a green area from then on to 100 votes.
-RED_TO = 50
-YELLOW_TO = 65
