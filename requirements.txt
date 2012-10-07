@@ -1,0 +1,6 @@
+Flask==0.9
+Flask-BasicAuth==0.1.0
+Jinja2==2.6
+Werkzeug==0.8.3
+storm==0.19
+wsgiref==0.1.2
